@@ -56,6 +56,14 @@ const NodePalette = () => {
           <p className="font-medium text-slate-100">JSON Processor Node</p>
           <p className="text-xs text-slate-400">Обрабатывает JSON по ключу/индексу</p>
         </div>
+        <div
+          className="p-3 border border-slate-700 bg-slate-700/50 rounded-md shadow hover:shadow-lg hover:border-sky-500 cursor-grab transition-all duration-150 ease-in-out"
+          onDragStart={(event) => onDragStart(event, 'httpRequestNode', 'HTTP Request')}
+          draggable
+        >
+          <p className="font-medium text-slate-100">HTTP Request Node</p>
+          <p className="text-xs text-slate-400">Выполняет HTTP запрос</p>
+        </div>
       </div>
     </aside>
   );

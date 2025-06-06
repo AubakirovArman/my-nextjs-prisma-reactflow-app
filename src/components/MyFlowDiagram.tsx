@@ -31,6 +31,7 @@ import AlertNode from './Nodes/AlertNode';
 import InputTextNode from './Nodes/InputTextNode';
 import DisplayNode from './Nodes/DisplayNode';
 import JsonProcessorNode from './Nodes/JsonProcessorNode';
+import HttpRequestNode from './Nodes/HttpRequestNode';
 
 const initialNodes: Node[] = [
   // Можно начать с пустого холста или с одного StartNode
@@ -73,6 +74,7 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
     inputTextNode: InputTextNode,
     displayNode: DisplayNode,
     jsonProcessorNode: JsonProcessorNode,
+    httpRequestNode: HttpRequestNode,
   }), []);
 
   const onConnect: OnConnect = useCallback(
@@ -120,7 +122,7 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
     [screenToFlowPosition, setNodes] // Добавляем setNodes в зависимости useCallback
   );
   // Функция выполнения одного узла и перехода к следующему
-  const processNode = useCallback((nodeId: string, currentData: any) => {
+  const processNode = useCallback(async (nodeId: string, currentData: any) => {
     const node = getNode(nodeId); // Получаем актуальный узел из React Flow
     if (!node) {
       console.error(`Узел с ID ${nodeId} не найден.`);
@@ -291,6 +293,38 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
         outputData = processedValue;
         console.log(`JsonProcessorNode (${node.data.label || 'JSON Processor'}) выдал:`, outputData);
         break;
+      case 'httpRequestNode':
+        console.log(`HttpRequestNode (${node.data.label || 'HTTP Request'}) получил:`, currentData);
+        try {
+          const method = (node.data.method || 'GET').toUpperCase();
+          const url = node.data.url || '';
+          const options: RequestInit = { method };
+          if (method === 'POST') {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = JSON.stringify(currentData);
+          }
+          const resp = await fetch(url, options);
+          const respData = await resp.json();
+          setNodes(curr =>
+            curr.map(n_map =>
+              n_map.id === nodeId
+                ? { ...n_map, data: { ...n_map.data, incomingData: currentData, response: respData } }
+                : n_map
+            )
+          );
+          outputData = respData;
+        } catch (error) {
+          setNodes(curr =>
+            curr.map(n_map =>
+              n_map.id === nodeId
+                ? { ...n_map, data: { ...n_map.data, incomingData: currentData, response: { error: String(error) } } }
+                : n_map
+            )
+          );
+          outputData = { error: String(error) };
+          console.error('HttpRequestNode error:', error);
+        }
+        break;
       default:
         console.warn(`Неизвестный тип узла для выполнения: ${node.type}`);
         break;
@@ -306,7 +340,7 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
       // Для упрощения, идем только по первому выходу
       // В реальном приложении нужно будет обрабатывать ветвления
       console.log(`Переход к следующему узлу: ${outgoers[0].id} с данными:`, outputData);
-      processNode(outgoers[0].id, outputData);
+      await processNode(outgoers[0].id, outputData);
     } else {
       console.log(`Конец ветки после узла ${nodeId}.`);
     }
@@ -315,7 +349,8 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
   // Эффект для запуска выполнения при изменении runId
   useEffect(() => {
     if (runId > 0) {
-      console.log(`--- Запуск выполнения потока (Run ID: ${runId}) ---`);
+      const runFlow = async () => {
+        console.log(`--- Запуск выполнения потока (Run ID: ${runId}) ---`);
       // Очищаем предыдущие данные в AlertNode, DisplayNode и InputTextNode перед новым выполнением
       setNodes((currentNodes) =>
         currentNodes.map((node) => {
@@ -357,6 +392,16 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
               },
             };
           }
+          if (node.type === 'httpRequestNode') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                incomingData: null,
+                response: null,
+              },
+            };
+          }
           return node;
         })
       );
@@ -366,16 +411,18 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
       // или если processNode вызывается в следующем рендере. Для большей предсказуемости,
       // можно было бы обернуть логику processNode в setTimeout(0) или использовать еще один useEffect, 
       // но попробуем так для начала.
-      const currentNodesAfterClear = getNodes();
-      const startNode = currentNodesAfterClear.find(n => n.type === 'startNode');
-      
-      if (startNode) {
-        processNode(startNode.id, null); // processNode теперь более стабилен
-      } else {
-        console.error("Не найден StartNode для начала выполнения!");
-        alert("Ошибка: Не найден узел 'StartNode' для начала выполнения!");
-      }
-      console.log(`--- Выполнение потока завершено (Run ID: ${runId}) ---`);
+        const currentNodesAfterClear = getNodes();
+        const startNode = currentNodesAfterClear.find(n => n.type === 'startNode');
+
+        if (startNode) {
+          await processNode(startNode.id, null);
+        } else {
+          console.error("Не найден StartNode для начала выполнения!");
+          alert("Ошибка: Не найден узел 'StartNode' для начала выполнения!");
+        }
+        console.log(`--- Выполнение потока завершено (Run ID: ${runId}) ---`);
+      };
+      runFlow();
     }
     // processNode теперь стабилен, setNodes и getNodes тоже. 
     // Основной триггер - runId.
