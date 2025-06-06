@@ -103,6 +103,7 @@ const categories: Category[] = [
     title: 'AI / ML',
     nodes: [
       { type: 'llmNode', label: 'LLM Node', description: 'Запрос к LLM' },
+      { type: 'ollamaNode', label: 'Ollama Node', description: 'Локальная LLM Ollama' },
       { type: 'embeddingNode', label: 'Embedding Node', description: 'Текст в вектор' },
       { type: 'vectorSearchNode', label: 'Vector Search Node', description: 'Поиск векторов' },
       { type: 'langChainAgentNode', label: 'LangChain Agent Node', description: 'Запуск агента' },

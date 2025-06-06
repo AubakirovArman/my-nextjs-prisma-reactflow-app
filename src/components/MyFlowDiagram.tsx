@@ -36,6 +36,7 @@ import TelegramListenerNode from './Nodes/TelegramListenerNode';
 import MqttListenerNode from './Nodes/MqttListenerNode';
 import EmailTriggerNode from './Nodes/EmailTriggerNode';
 import LLMNode from './Nodes/LLMNode';
+import OllamaNode from './Nodes/OllamaNode';
 import EmbeddingNode from './Nodes/EmbeddingNode';
 import VectorSearchNode from './Nodes/VectorSearchNode';
 import LangChainAgentNode from './Nodes/LangChainAgentNode';
@@ -97,6 +98,7 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     mqttListenerNode: MqttListenerNode,
     emailTriggerNode: EmailTriggerNode,
     llmNode: LLMNode,
+    ollamaNode: OllamaNode,
     embeddingNode: EmbeddingNode,
     vectorSearchNode: VectorSearchNode,
     langChainAgentNode: LangChainAgentNode,
@@ -152,6 +154,13 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
       let nodeData: Record<string, unknown> = { label: `${label}` };
       if (type === 'llmNode') {
         nodeData = { ...nodeData, model: 'gpt-3.5-turbo', temperature: 0.7 };
+      } else if (type === 'ollamaNode') {
+        nodeData = {
+          ...nodeData,
+          base_url: 'http://localhost:11434',
+          model_name: 'llama2',
+          temperature: 0.7,
+        };
       }
       const newNode: Node = {
         id: getId(type), // Генерируем уникальный ID
@@ -393,6 +402,64 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
           outputData = json.response;
         } catch (err) {
           console.error('LLMNode error:', err);
+          setNodes((curr) =>
+            curr.map((n) =>
+              n.id === nodeId
+                ? { ...n, data: { ...n.data, error: String(err) } }
+                : n
+            )
+          );
+        }
+        break;
+      case 'ollamaNode':
+        console.log(`OllamaNode (${node.data.label || 'Ollama'}) получил:`, currentData);
+
+        setNodes((currentNodes) =>
+          currentNodes.map((n_map) =>
+            n_map.id === nodeId
+              ? { ...n_map, data: { ...n_map.data, incomingData: currentData } }
+              : n_map
+          )
+        );
+
+        try {
+          const res = await fetch('/api/ollama', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: currentData,
+              config: {
+                base_url: node.data.base_url,
+                model_name: node.data.model_name,
+                temperature: node.data.temperature,
+                format: node.data.format,
+                metadata: node.data.metadata,
+                tags: node.data.tags,
+                stop_tokens: node.data.stop_tokens,
+                system: node.data.system,
+                template: node.data.template,
+              },
+            }),
+          });
+          const json = await res.json();
+          setNodes((curr) =>
+            curr.map((n) =>
+              n.id === nodeId
+                ? {
+                    ...n,
+                    data: {
+                      ...n.data,
+                      response: json.response,
+                      rawOutput: json.raw_output,
+                      error: json.error,
+                    },
+                  }
+                : n
+            )
+          );
+          outputData = json.response;
+        } catch (err) {
+          console.error('OllamaNode error:', err);
           setNodes((curr) =>
             curr.map((n) =>
               n.id === nodeId
