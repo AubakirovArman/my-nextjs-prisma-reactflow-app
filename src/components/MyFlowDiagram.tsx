@@ -1,7 +1,7 @@
 // src/components/MyFlowDiagram.tsx
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef, DragEvent,useEffect } from 'react'; // Добавь useRef, DragEvent
+import React, { useState, useCallback, useMemo, useRef, DragEvent, useEffect, useImperativeHandle, forwardRef } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -54,14 +54,20 @@ interface FlowComponentProps {
   onNodeProcessed?: (nodeId: string, data: any) => void;
   onProcessingComplete?: () => void;
 }
+
+export interface FlowComponentRef {
+  getFlowData: () => { nodes: Node[]; edges: Edge[] };
+  setFlowData: (data: { nodes: Node[]; edges: Edge[] }) => void;
+}
+
 // Компонент Flow, который будет использовать useReactFlow
-const FlowComponent: React.FC<FlowComponentProps> = ({ 
-  runId, 
-  initialNodes = [], 
-  initialEdges = [], 
-  onNodeProcessed, 
-  onProcessingComplete 
-}) => {
+const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function FlowComponent({
+  runId,
+  initialNodes = [],
+  initialEdges = [],
+  onNodeProcessed,
+  onProcessingComplete
+}, ref) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { project, getNode, getNodes, getEdges } = useReactFlow(); // Added getNode, getNodes, getEdges
@@ -78,6 +84,14 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
     webhookTriggerNode: WebhookTriggerNode,
     telegramNode: TelegramNode,
   }), []);
+
+  useImperativeHandle(ref, () => ({
+    getFlowData: () => ({ nodes, edges }),
+    setFlowData: ({ nodes: n, edges: e }) => {
+      setNodes(n);
+      setEdges(e);
+    }
+  }));
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -461,14 +475,19 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
 
 // Обертка MyFlowDiagram, чтобы предоставить ReactFlowProvider
 // Это необходимо, чтобы хук useReactFlow работал корректно в FlowComponent
-export default function MyFlowDiagram({ runId }: { runId: number }) {
+export interface MyFlowDiagramRef extends FlowComponentRef {}
+
+const MyFlowDiagram = forwardRef<MyFlowDiagramRef, { runId: number }>(function MyFlowDiagram({ runId }, ref) {
   return (
     <ReactFlowProvider>
-      <FlowComponent 
-        runId={runId} 
+      <FlowComponent
+        ref={ref}
+        runId={runId}
         initialNodes={initialNodes}
         initialEdges={initialEdges}
       />
     </ReactFlowProvider>
   );
-}
+});
+
+export default MyFlowDiagram;
