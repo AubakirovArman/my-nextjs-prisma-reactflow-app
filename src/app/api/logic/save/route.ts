@@ -9,7 +9,9 @@ export async function POST(req: NextRequest) {
     }
 
     const webhookNode = Array.isArray(nodes)
-      ? nodes.find((n: any) => n.type === 'webhookTriggerNode' && n.data?.customName)
+      ? nodes.find((n: { type?: string; data?: Record<string, unknown> }) =>
+          n.type === 'webhookTriggerNode' &&
+          typeof (n.data?.customName) === 'string')
       : undefined;
 
     const flow = await prisma.flow.create({
