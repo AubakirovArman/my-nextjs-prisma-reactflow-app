@@ -33,6 +33,12 @@ import DisplayNode from './Nodes/DisplayNode';
 import JsonProcessorNode from './Nodes/JsonProcessorNode';
 import WebhookTriggerNode from './Nodes/WebhookTriggerNode';
 import TelegramNode from './Nodes/TelegramNode';
+import ScheduleNode from './Nodes/ScheduleNode';
+import FileWatcherNode from './Nodes/FileWatcherNode';
+import DatabaseTriggerNode from './Nodes/DatabaseTriggerNode';
+import TelegramListenerNode from './Nodes/TelegramListenerNode';
+import MqttListenerNode from './Nodes/MqttListenerNode';
+import EmailTriggerNode from './Nodes/EmailTriggerNode';
 
 const initialNodes: Node[] = [
   // Можно начать с пустого холста или с одного StartNode
@@ -83,6 +89,12 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     jsonProcessorNode: JsonProcessorNode,
     webhookTriggerNode: WebhookTriggerNode,
     telegramNode: TelegramNode,
+    scheduleNode: ScheduleNode,
+    fileWatcherNode: FileWatcherNode,
+    databaseTriggerNode: DatabaseTriggerNode,
+    telegramListenerNode: TelegramListenerNode,
+    mqttListenerNode: MqttListenerNode,
+    emailTriggerNode: EmailTriggerNode,
   }), []);
 
   useImperativeHandle(ref, () => ({
@@ -350,6 +362,20 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
 
         outputData = currentData;
         break;
+      case 'scheduleNode':
+      case 'fileWatcherNode':
+      case 'databaseTriggerNode':
+      case 'telegramListenerNode':
+      case 'mqttListenerNode':
+      case 'emailTriggerNode':
+        console.log(`${node.type} (${node.data.label || node.type}) получил:`, currentData);
+        setNodes((currentNodes) =>
+          currentNodes.map((n_map) =>
+            n_map.id === nodeId ? { ...n_map, data: { ...n_map.data, incomingData: currentData } } : n_map
+          )
+        );
+        outputData = currentData;
+        break;
       default:
         console.warn(`Неизвестный тип узла для выполнения: ${node.type}`);
         break;
@@ -417,6 +443,22 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
             };
           }
           if (node.type === 'webhookTriggerNode') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                incomingData: null,
+              },
+            };
+          }
+          if (
+            node.type === 'scheduleNode' ||
+            node.type === 'fileWatcherNode' ||
+            node.type === 'databaseTriggerNode' ||
+            node.type === 'telegramListenerNode' ||
+            node.type === 'mqttListenerNode' ||
+            node.type === 'emailTriggerNode'
+          ) {
             return {
               ...node,
               data: {
