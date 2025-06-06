@@ -6,7 +6,7 @@ import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
 interface WebhookTriggerData {
   label?: string;
   customName?: string;
-  incomingData?: any;
+  incomingData?: Record<string, unknown>;
 }
 
 const WebhookTriggerNode = ({ id, data }: NodeProps<WebhookTriggerData>) => {

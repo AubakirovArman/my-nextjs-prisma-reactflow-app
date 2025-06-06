@@ -4,7 +4,7 @@
 import React, { useState, useCallback } from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
 
-const DisplayNode = ({ id, data }: NodeProps<{ label?: string; incomingData?: any; nodeId?: string }>) => {
+const DisplayNode = ({ id, data }: NodeProps<{ label?: string; incomingData?: Record<string, unknown>; nodeId?: string }>) => {
   const { setNodes } = useReactFlow();
   const [nodeIdValue, setNodeIdValue] = useState(data.nodeId || id);
 
@@ -27,7 +27,7 @@ const DisplayNode = ({ id, data }: NodeProps<{ label?: string; incomingData?: an
       })
     );
   }, [id, setNodes]);
-  const renderValue = (value: any) => {
+  const renderValue = (value: unknown) => {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
     if (typeof value === 'string') return value;

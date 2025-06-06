@@ -7,8 +7,8 @@ interface JsonProcessorNodeData {
   label?: string;
   path?: string;
   sourceNodeId?: string;
-  incomingData?: any;
-  extractedValue?: any;
+  incomingData?: Record<string, unknown>;
+  extractedValue?: unknown;
   error?: string;
 }
 
@@ -60,35 +60,7 @@ const JsonProcessorNode = ({ id, data }: NodeProps<JsonProcessorNodeData>) => {
     );
   }, [id, setNodes]);
 
-  // Функция для извлечения значения по пути
-  const extractValueByPath = (obj: any, path: string): any => {
-    if (!path || !obj) return obj;
-    
-    try {
-      // Разбиваем путь на части (поддерживаем точки и квадратные скобки)
-      const parts = path.split(/[.\[\]]+/).filter(part => part !== '');
-      
-      let current = obj;
-      for (const part of parts) {
-        if (current === null || current === undefined) {
-          return undefined;
-        }
-        
-        // Проверяем, является ли часть числом (индекс массива)
-        const index = parseInt(part, 10);
-        if (!isNaN(index) && Array.isArray(current)) {
-          current = current[index];
-        } else {
-          current = current[part];
-        }
-      }
-      
-      return current;
-    } catch (error) {
-      console.error('Ошибка при извлечении значения:', error);
-      return undefined;
-    }
-  };
+
 
   // Функция для отображения входящих данных
   const renderIncomingData = () => {

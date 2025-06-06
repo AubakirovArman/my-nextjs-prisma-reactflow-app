@@ -5,7 +5,7 @@ import React, { useState, useCallback } from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
 // useStoreApi is no longer needed for this specific logic if only used for nodeInternals
 
-const InputTextNode = ({ id, data }: NodeProps<{ label?: string; value?: string; incomingData?: any; nodeId?: string }>) => {
+const InputTextNode = ({ id, data }: NodeProps<{ label?: string; value?: string; incomingData?: Record<string, unknown>; nodeId?: string }>) => {
   const { setNodes } = useReactFlow(); // setNodes is sufficient
   const [inputValue, setInputValue] = useState(data.value || '');
   const [nodeIdValue, setNodeIdValue] = useState(data.nodeId || id);

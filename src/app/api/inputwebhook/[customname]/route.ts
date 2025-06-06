@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export async function POST(req: NextRequest, { params }: { params: { customname: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ customname: string }> }) {
+  const { customname } = await params;
   let payload = null;
   try {
     payload = await req.json();
@@ -9,9 +10,9 @@ export async function POST(req: NextRequest, { params }: { params: { customname:
     // ignore
   }
 
-  console.log('Webhook', params.customname, payload);
+  console.log('Webhook', customname, payload);
 
-  const flow = await prisma.flow.findFirst({ where: { webhookName: params.customname } });
+  const flow = await prisma.flow.findFirst({ where: { webhookName: customname } });
 
   if (!flow) {
     return NextResponse.json({ error: 'Flow not found' }, { status: 404 });

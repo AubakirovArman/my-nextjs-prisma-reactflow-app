@@ -4,7 +4,7 @@
 import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 
-const AlertNode = ({ data }: NodeProps<{ label?: string; incomingValue?: any }>) => {
+const AlertNode = ({ data }: NodeProps<{ label?: string; incomingValue?: unknown }>) => {
   return (
     <div className="px-4 py-3 shadow-md rounded-md bg-amber-500 border-2 border-amber-600 text-white w-48">
       <Handle

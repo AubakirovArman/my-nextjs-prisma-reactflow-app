@@ -51,7 +51,7 @@ interface FlowComponentProps {
   runId: number;
   initialNodes?: Node[];
   initialEdges?: Edge[];
-  onNodeProcessed?: (nodeId: string, data: any) => void;
+  onNodeProcessed?: (nodeId: string, data: unknown) => void;
   onProcessingComplete?: () => void;
 }
 
@@ -138,7 +138,7 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     [screenToFlowPosition, setNodes] // Добавляем setNodes в зависимости useCallback
   );
   // Функция выполнения одного узла и перехода к следующему
-  const processNode = useCallback((nodeId: string, currentData: any) => {
+  const processNode = useCallback((nodeId: string, currentData: unknown) => {
     const node = getNode(nodeId); // Получаем актуальный узел из React Flow
     if (!node) {
       console.error(`Узел с ID ${nodeId} не найден.`);
@@ -446,7 +446,7 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     }
     // processNode теперь стабилен, setNodes и getNodes тоже. 
     // Основной триггер - runId.
-  }, [runId, processNode, setNodes, getNodes]); 
+  }, [runId, processNode, setNodes, getNodes, getEdges]); 
 
   return (
     <div ref={reactFlowWrapper} style={{ width: '100%', height: '100%' }} >
@@ -470,12 +470,11 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
       </ReactFlow>
     </div>
   );
-}
-
+});
 
 // Обертка MyFlowDiagram, чтобы предоставить ReactFlowProvider
 // Это необходимо, чтобы хук useReactFlow работал корректно в FlowComponent
-export interface MyFlowDiagramRef extends FlowComponentRef {}
+export type MyFlowDiagramRef = FlowComponentRef;
 
 const MyFlowDiagram = forwardRef<MyFlowDiagramRef, { runId: number }>(function MyFlowDiagram({ runId }, ref) {
   return (
