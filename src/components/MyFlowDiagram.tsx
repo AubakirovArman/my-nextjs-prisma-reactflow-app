@@ -31,6 +31,7 @@ import AlertNode from './Nodes/AlertNode';
 import InputTextNode from './Nodes/InputTextNode';
 import DisplayNode from './Nodes/DisplayNode';
 import JsonProcessorNode from './Nodes/JsonProcessorNode';
+import WebhookTriggerNode from './Nodes/WebhookTriggerNode';
 
 const initialNodes: Node[] = [
   // Можно начать с пустого холста или с одного StartNode
@@ -73,6 +74,7 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
     inputTextNode: InputTextNode,
     displayNode: DisplayNode,
     jsonProcessorNode: JsonProcessorNode,
+    webhookTriggerNode: WebhookTriggerNode,
   }), []);
 
   const onConnect: OnConnect = useCallback(
@@ -136,6 +138,19 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
         // StartNode просто инициирует поток, может передать начальное значение если нужно
         console.log('StartNode выполнен.');
         outputData = { message: "Поток запущен!" }; // Пример начальных данных
+        break;
+      case 'webhookTriggerNode':
+        console.log(`WebhookTriggerNode (${node.data.label || 'Webhook Trigger'}) получил:`, currentData);
+
+        setNodes((currentNodes) =>
+          currentNodes.map((n_map) =>
+            n_map.id === nodeId
+              ? { ...n_map, data: { ...n_map.data, incomingData: currentData } }
+              : n_map
+          )
+        );
+
+        outputData = currentData;
         break;
       case 'inputTextNode':
         // InputTextNode получает входящие данные и объединяет их со своим значением
@@ -354,6 +369,15 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
                 incomingData: null,
                 processedValue: null,
                 error: null,
+              },
+            };
+          }
+          if (node.type === 'webhookTriggerNode') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                incomingData: null,
               },
             };
           }
