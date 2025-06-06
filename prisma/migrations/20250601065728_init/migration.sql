@@ -1,0 +1,11 @@
+-- CreateTable
+CREATE TABLE "Node" (
+    "id" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "x" DOUBLE PRECISION NOT NULL,
+    "y" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Node_pkey" PRIMARY KEY ("id")
+);
