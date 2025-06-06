@@ -46,6 +46,11 @@ export default function HomePage() {
     }
   };
 
+  const handleDeleteFlow = async (id: string) => {
+    await fetch(`/api/logic/${id}`, { method: 'DELETE' });
+    setLogics(prev => prev.filter(l => l.id !== id));
+  };
+
   return (
     // Общий контейнер страницы, используем переменные CSS для фона и текста
     // или напрямую классы Tailwind, если они уже включают эти переменные.
@@ -92,8 +97,15 @@ export default function HomePage() {
               <div
                 key={l.id}
                 onClick={() => handleLoadFlow(l.id)}
-                className="p-3 border border-transparent hover:border-sky-500 bg-slate-700/50 rounded-md cursor-pointer transition-colors duration-150 ease-in-out"
+                className="relative p-3 border border-transparent hover:border-sky-500 bg-slate-700/50 rounded-md cursor-pointer transition-colors duration-150 ease-in-out"
               >
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteFlow(l.id); }}
+                  className="absolute top-1 right-1 text-red-400 hover:text-red-300"
+                >
+                  ×
+                </button>
                 <p className="font-medium text-slate-100">{l.name}</p>
                 <p className="text-xs text-slate-400">{new Date(l.createdAt).toLocaleDateString()}</p>
               </div>
