@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest, { params }: { params: { customname: string } }) {
   let payload = null;
@@ -10,7 +11,13 @@ export async function POST(req: NextRequest, { params }: { params: { customname:
 
   console.log('Webhook', params.customname, payload);
 
-  // Здесь можно добавить логику запуска схемы
+  const flow = await prisma.flow.findFirst({ where: { webhookName: params.customname } });
 
-  return NextResponse.json({ ok: true });
+  if (!flow) {
+    return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
+  }
+
+  // Здесь можно добавить логику запуска схемы с использованием flow.nodes и flow.edges
+
+  return NextResponse.json({ ok: true, flowId: flow.id });
 }
