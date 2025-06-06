@@ -1,18 +1,14 @@
 // src/components/MyFlowDiagram.tsx
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef, DragEvent, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useCallback, useMemo, useRef, DragEvent, useEffect, useImperativeHandle, forwardRef } from 'react';
 import {
   ReactFlow,
   Controls,
   Background,
-  applyNodeChanges,
-  applyEdgeChanges,
   addEdge,
   Node,
   Edge,
-  OnNodesChange,
-  OnEdgesChange,
   OnConnect,
   NodeTypes,
   useReactFlow, // <--- Импортируй хук useReactFlow
@@ -67,8 +63,6 @@ interface FlowComponentProps {
   runId: number;
   initialNodes?: Node[];
   initialEdges?: Edge[];
-  onNodeProcessed?: (nodeId: string, data: unknown) => void;
-  onProcessingComplete?: () => void;
 }
 
 export interface FlowComponentRef {
@@ -80,14 +74,11 @@ export interface FlowComponentRef {
 const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function FlowComponent({
   runId,
   initialNodes = [],
-  initialEdges = [],
-  onNodeProcessed,
-  onProcessingComplete
+  initialEdges = []
 }, ref) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const { project, getNode, getNodes, getEdges } = useReactFlow(); // Added getNode, getNodes, getEdges
-  const [processingRunId, setProcessingRunId] = useState<string | null>(null);
+  const { getNode, getNodes, getEdges } = useReactFlow();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition } = useReactFlow(); // Removed redundant getNode, getEdges
 
@@ -158,11 +149,15 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
         y: event.clientY,
       });
 
+      let nodeData: Record<string, unknown> = { label: `${label}` };
+      if (type === 'llmNode') {
+        nodeData = { ...nodeData, model: 'gpt-3.5-turbo', temperature: 0.7 };
+      }
       const newNode: Node = {
         id: getId(type), // Генерируем уникальный ID
         type,
         position,
-        data: { label: `${label}` }, // Можно добавить и другие данные по умолчанию
+        data: nodeData, // Можно добавить и другие данные по умолчанию
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -170,7 +165,7 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     [screenToFlowPosition, setNodes] // Добавляем setNodes в зависимости useCallback
   );
   // Функция выполнения одного узла и перехода к следующему
-  const processNode = useCallback((nodeId: string, currentData: unknown) => {
+  const processNode = useCallback(async (nodeId: string, currentData: unknown): Promise<void> => {
     const node = getNode(nodeId); // Получаем актуальный узел из React Flow
     if (!node) {
       console.error(`Узел с ID ${nodeId} не найден.`);
@@ -354,6 +349,59 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
         outputData = processedValue;
         console.log(`JsonProcessorNode (${node.data.label || 'JSON Processor'}) выдал:`, outputData);
         break;
+      case 'llmNode':
+        console.log(`LLMNode (${node.data.label || 'LLM'}) получил:`, currentData);
+
+        setNodes((currentNodes) =>
+          currentNodes.map((n_map) =>
+            n_map.id === nodeId
+              ? { ...n_map, data: { ...n_map.data, incomingData: currentData } }
+              : n_map
+          )
+        );
+
+        try {
+          const res = await fetch('/api/llm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: currentData,
+              memory: node.data.memory,
+              config: {
+                model: node.data.model,
+                apiKey: node.data.apiKey,
+                temperature: node.data.temperature,
+              },
+            }),
+          });
+          const json = await res.json();
+          setNodes((curr) =>
+            curr.map((n) =>
+              n.id === nodeId
+                ? {
+                    ...n,
+                    data: {
+                      ...n.data,
+                      response: json.response,
+                      rawOutput: json.raw_output,
+                      error: json.error,
+                    },
+                  }
+                : n
+            )
+          );
+          outputData = json.response;
+        } catch (err) {
+          console.error('LLMNode error:', err);
+          setNodes((curr) =>
+            curr.map((n) =>
+              n.id === nodeId
+                ? { ...n, data: { ...n.data, error: String(err) } }
+                : n
+            )
+          );
+        }
+        break;
       case 'telegramNode':
         console.log(`TelegramNode (${node.data.label || 'Telegram'}) получил:`, currentData);
 
@@ -411,18 +459,19 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
       // Для упрощения, идем только по первому выходу
       // В реальном приложении нужно будет обрабатывать ветвления
       console.log(`Переход к следующему узлу: ${outgoers[0].id} с данными:`, outputData);
-      processNode(outgoers[0].id, outputData);
+      await processNode(outgoers[0].id, outputData);
     } else {
       console.log(`Конец ветки после узла ${nodeId}.`);
     }
-  }, [getNode, getNodes, getEdges, setNodes]); // Dependencies are now stable functions from useReactFlow and useState
+  }, [getNode, getNodes, getEdges, setNodes, nodes]); // Dependencies are now stable functions from useReactFlow and useState
 
   // Эффект для запуска выполнения при изменении runId
   useEffect(() => {
     if (runId > 0) {
-      console.log(`--- Запуск выполнения потока (Run ID: ${runId}) ---`);
-      // Очищаем предыдущие данные в AlertNode, DisplayNode и InputTextNode перед новым выполнением
-      setNodes((currentNodes) =>
+      (async () => {
+        console.log(`--- Запуск выполнения потока (Run ID: ${runId}) ---`);
+        // Очищаем предыдущие данные в AlertNode, DisplayNode и InputTextNode перед новым выполнением
+        setNodes((currentNodes) =>
         currentNodes.map((node) => {
           if (node.type === 'alertNode') {
             return {
@@ -499,16 +548,19 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
       );
 
       if (rootNodes.length > 0) {
-        rootNodes.forEach((root) => processNode(root.id, null));
+        for (const root of rootNodes) {
+          await processNode(root.id, null);
+        }
       } else {
         console.error("Не найдено ни одного начального узла!");
         alert("Ошибка: Не найдено ни одного начального узла!");
       }
       console.log(`--- Выполнение потока завершено (Run ID: ${runId}) ---`);
+      })();
     }
-    // processNode теперь стабилен, setNodes и getNodes тоже. 
+    // processNode теперь стабилен, setNodes и getNodes тоже.
     // Основной триггер - runId.
-  }, [runId, processNode, setNodes, getNodes, getEdges]); 
+  }, [runId, processNode, setNodes, getNodes, getEdges]);
 
   return (
     <div ref={reactFlowWrapper} style={{ width: '100%', height: '100%' }} >

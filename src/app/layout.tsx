@@ -49,10 +49,4 @@ export const metadata: Metadata = {
   description: "Визуальный конструктор логических схем с поддержкой узлов обработки данных",
 };
 
-// Добавляем preconnect для Google Fonts
-const fontPreconnectLinks = [
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-  { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' }
-];
-
 
