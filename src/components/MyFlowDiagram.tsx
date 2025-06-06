@@ -32,6 +32,7 @@ import InputTextNode from './Nodes/InputTextNode';
 import DisplayNode from './Nodes/DisplayNode';
 import JsonProcessorNode from './Nodes/JsonProcessorNode';
 import WebhookTriggerNode from './Nodes/WebhookTriggerNode';
+import TelegramNode from './Nodes/TelegramNode';
 
 const initialNodes: Node[] = [
   // Можно начать с пустого холста или с одного StartNode
@@ -75,6 +76,7 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
     displayNode: DisplayNode,
     jsonProcessorNode: JsonProcessorNode,
     webhookTriggerNode: WebhookTriggerNode,
+    telegramNode: TelegramNode,
   }), []);
 
   const onConnect: OnConnect = useCallback(
@@ -305,6 +307,34 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
         // JsonProcessorNode выдает обработанное значение
         outputData = processedValue;
         console.log(`JsonProcessorNode (${node.data.label || 'JSON Processor'}) выдал:`, outputData);
+        break;
+      case 'telegramNode':
+        console.log(`TelegramNode (${node.data.label || 'Telegram'}) получил:`, currentData);
+
+        setNodes((currentNodes) =>
+          currentNodes.map((n_map) =>
+            n_map.id === nodeId
+              ? { ...n_map, data: { ...n_map.data, incomingData: currentData } }
+              : n_map
+          )
+        );
+
+        try {
+          const text =
+            typeof currentData === 'string'
+              ? currentData
+              : JSON.stringify(currentData);
+          const url =
+            'https://api.telegram.org/bot1434601883:AAFDS330oYhld1GttIMLh49gBDnetCezU2A/sendMessage?chat_id=854186602&text=' +
+            encodeURIComponent(text);
+          fetch(url, { method: 'POST' }).catch((err) =>
+            console.error('TelegramNode fetch error:', err)
+          );
+        } catch (err) {
+          console.error('TelegramNode error:', err);
+        }
+
+        outputData = currentData;
         break;
       default:
         console.warn(`Неизвестный тип узла для выполнения: ${node.type}`);

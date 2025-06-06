@@ -64,6 +64,14 @@ const NodePalette = () => {
           <p className="font-medium text-slate-100">Webhook Trigger Node</p>
           <p className="text-xs text-slate-400">Запускает логику через webhook</p>
         </div>
+        <div
+          className="p-3 border border-slate-700 bg-slate-700/50 rounded-md shadow hover:shadow-lg hover:border-sky-500 cursor-grab transition-all duration-150 ease-in-out"
+          onDragStart={(event) => onDragStart(event, 'telegramNode', 'Telegram')}
+          draggable
+        >
+          <p className="font-medium text-slate-100">Telegram Node</p>
+          <p className="text-xs text-slate-400">Отправляет текст в Telegram</p>
+        </div>
       </div>
     </aside>
   );
