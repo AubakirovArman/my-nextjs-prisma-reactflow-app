@@ -361,19 +361,18 @@ const FlowComponent: React.FC<FlowComponentProps> = ({
         })
       );
 
-      // Получаем актуальный startNode после очистки
-      // Важно: getNodes() здесь вернет узлы ПОСЛЕ обновления setNodes выше, если setNodes успело отработать синхронно
-      // или если processNode вызывается в следующем рендере. Для большей предсказуемости,
-      // можно было бы обернуть логику processNode в setTimeout(0) или использовать еще один useEffect, 
-      // но попробуем так для начала.
+      // Определяем корневые узлы (без входящих соединений)
       const currentNodesAfterClear = getNodes();
-      const startNode = currentNodesAfterClear.find(n => n.type === 'startNode');
-      
-      if (startNode) {
-        processNode(startNode.id, null); // processNode теперь более стабилен
+      const currentEdgesAfterClear = getEdges();
+      const rootNodes = currentNodesAfterClear.filter(
+        (n) => getIncomers(n, currentNodesAfterClear, currentEdgesAfterClear).length === 0
+      );
+
+      if (rootNodes.length > 0) {
+        rootNodes.forEach((root) => processNode(root.id, null));
       } else {
-        console.error("Не найден StartNode для начала выполнения!");
-        alert("Ошибка: Не найден узел 'StartNode' для начала выполнения!");
+        console.error("Не найдено ни одного начального узла!");
+        alert("Ошибка: Не найдено ни одного начального узла!");
       }
       console.log(`--- Выполнение потока завершено (Run ID: ${runId}) ---`);
     }
