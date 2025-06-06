@@ -39,6 +39,16 @@ import DatabaseTriggerNode from './Nodes/DatabaseTriggerNode';
 import TelegramListenerNode from './Nodes/TelegramListenerNode';
 import MqttListenerNode from './Nodes/MqttListenerNode';
 import EmailTriggerNode from './Nodes/EmailTriggerNode';
+import LLMNode from './Nodes/LLMNode';
+import EmbeddingNode from './Nodes/EmbeddingNode';
+import VectorSearchNode from './Nodes/VectorSearchNode';
+import LangChainAgentNode from './Nodes/LangChainAgentNode';
+import RAGNode from './Nodes/RAGNode';
+import SentimentAnalysisNode from './Nodes/SentimentAnalysisNode';
+import TextClassificationNode from './Nodes/TextClassificationNode';
+import SummarizationNode from './Nodes/SummarizationNode';
+import TextToSQLNode from './Nodes/TextToSQLNode';
+import PromptTemplateNode from './Nodes/PromptTemplateNode';
 
 const initialNodes: Node[] = [
   // Можно начать с пустого холста или с одного StartNode
@@ -95,6 +105,16 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     telegramListenerNode: TelegramListenerNode,
     mqttListenerNode: MqttListenerNode,
     emailTriggerNode: EmailTriggerNode,
+    llmNode: LLMNode,
+    embeddingNode: EmbeddingNode,
+    vectorSearchNode: VectorSearchNode,
+    langChainAgentNode: LangChainAgentNode,
+    ragNode: RAGNode,
+    sentimentAnalysisNode: SentimentAnalysisNode,
+    textClassificationNode: TextClassificationNode,
+    summarizationNode: SummarizationNode,
+    textToSQLNode: TextToSQLNode,
+    promptTemplateNode: PromptTemplateNode,
   }), []);
 
   useImperativeHandle(ref, () => ({
