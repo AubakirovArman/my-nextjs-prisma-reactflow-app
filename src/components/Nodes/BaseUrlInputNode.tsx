@@ -40,7 +40,7 @@ const BaseUrlInputNode = ({ id, data }: NodeProps<BaseUrlInputNodeData>) => {
     if (data.real_time_refresh) {
       triggerModelNameRefresh();
     }
-  }, [id, setNodes, data.real_time_refresh]);
+  }, [id, setNodes, data.real_time_refresh, triggerModelNameRefresh]);
 
   const onNodeIdChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newNodeId = evt.target.value;

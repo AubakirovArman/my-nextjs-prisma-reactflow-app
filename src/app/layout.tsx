@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 // src/app/layout.tsx
 
 import '@xyflow/react/dist/style.css'; // <--- ДОБАВЬ ЭТУ СТРОКУ
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: 'swap',
   fallback: ['system-ui', 'arial']
+});
+
+const orbitron = Orbitron({
+  variable: "--font-orbitron",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: 'swap'
 });
 
 
@@ -23,7 +30,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${inter.className} ${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${inter.className} ${geistSans.variable} ${geistMono.variable} ${orbitron.variable}`}>
         {children}
       </body>
     </html>

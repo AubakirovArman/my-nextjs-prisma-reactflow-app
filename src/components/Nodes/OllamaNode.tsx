@@ -141,7 +141,7 @@ const OllamaNode = ({ id, data }: NodeProps<OllamaNodeData>) => {
   }, [id, setNodes]);
 
   // Функции для получения эффективных значений (приоритет входящим данным)
-  const getEffectiveValue = useCallback((localValue: any, incomingValue: any) => {
+  const getEffectiveValue = useCallback(<T,>(localValue: T, incomingValue: T | undefined) => {
     return incomingValue !== undefined ? incomingValue : localValue;
   }, []);
 
