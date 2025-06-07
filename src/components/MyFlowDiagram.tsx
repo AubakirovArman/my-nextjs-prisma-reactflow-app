@@ -661,7 +661,7 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
         fitViewOptions={fitViewOptions}
         defaultEdgeOptions={defaultEdgeOptions}
 
-        className="bg-slate-900" // Можно также задать фон здесь, если нужно
+        className="bg-transparent" // Фон берём из общей страницы
       >
         <Controls />
         <Background />

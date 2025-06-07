@@ -2,14 +2,15 @@
 
 :root {
   /* Forced Dark Theme Variables */
-  --background: #1a202c;  /* Темный фон (эквивалент Tailwind slate-900) */
-  --foreground: #f7fafc;  /* Светлый текст (эквивалент Tailwind slate-50/slate-100) */
-  --primary-accent: #63b3ed; /* Яркий синий акцент (Tailwind sky-400/sky-500) */
-  --secondary-accent: #81e6d9; /* Яркий бирюзовый акцент (Tailwind cyan-300/cyan-400) */
+  --background: #0f172a;
+  --background-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #3b0764 100%);
+  --foreground: #f7fafc;
+  --primary-accent: #63b3ed;
+  --secondary-accent: #81e6d9;
 
-  /* Можешь добавить больше переменных для темной темы, если нужно */
-  --card-background: #2d3748; /* Немного светлее основного фона (slate-800) */
-  --border-color: #4a5568;    /* Цвет для границ (slate-600/slate-700) */
+  /* Дополнительные переменные */
+  --card-background: #2d3748;
+  --border-color: #4a5568;
 }
 
 @theme inline {
@@ -17,6 +18,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-orbitron);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -29,17 +31,16 @@
 }
 
 body {
-  background-color: var(--background);
+  background: radial-gradient(circle at 20% 20%, rgba(99, 179, 237, 0.15), transparent 60%), var(--background-gradient);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* transition убран, так как тема больше не переключается */
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sans); /* Or a specific display font if you add one */
+  font-family: var(--font-display), var(--font-sans);
   color: var(--foreground);
   margin-bottom: 0.5em;
   line-height: 1.3;
@@ -61,14 +62,11 @@ a:hover {
 /* Ensure React Flow styles are imported if not handled elsewhere */
 /* @import '@xyflow/react/dist/style.css'; */
 .react-flow__node-default {
-  color: #1a202c !important; /* Темный цвет текста для дефолтных узлов */
-}
-/* Или можно стилизовать его более полно под темную тему */
-.react-flow__node-default {
-    background: var(--card-background, #2d3748) !important;
-    color: var(--foreground, #f7fafc) !important;
-    border: 1px solid var(--border-color, #4a5568) !important;
+  background: var(--card-background, #2d3748) !important;
+  color: var(--foreground, #f7fafc) !important;
+  border: 1px solid var(--border-color, #4a5568) !important;
+  box-shadow: 0 0 8px rgba(99, 179, 237, 0.2);
 }
 .react-flow__node-default .react-flow__handle {
-    background: var(--primary-accent, #63b3ed) !important;
+  background: var(--primary-accent, #63b3ed) !important;
 }

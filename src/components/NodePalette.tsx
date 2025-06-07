@@ -124,7 +124,7 @@ const categories: Category[] = [
 
 const NodeItemComponent = ({ type, label, description }: NodeItem) => (
   <div
-    className="p-3 border border-slate-700 bg-slate-700/50 rounded-md shadow hover:shadow-lg hover:border-sky-500 cursor-grab transition-all duration-150 ease-in-out"
+    className="p-3 border border-slate-500/50 bg-slate-700/30 rounded-md shadow-md hover:shadow-sky-500/40 hover:border-sky-500 cursor-grab transition-all duration-150 ease-in-out backdrop-blur-sm"
     onDragStart={(event) => onDragStart(event, type, label)}
     draggable
   >
@@ -141,7 +141,7 @@ const NodePalette = () => {
   };
 
   return (
-    <aside className="w-64 p-4 border-r border-slate-700 bg-slate-800 overflow-y-auto shrink-0">
+    <aside className="w-64 p-4 border-r border-slate-600/60 bg-slate-800/30 backdrop-blur-lg overflow-y-auto shrink-0">
       <h3 className="text-lg font-semibold mb-4 text-sky-400">Типы Узлов</h3>
       <div className="space-y-4">
         {categories.map((cat) => (
