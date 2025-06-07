@@ -25,6 +25,7 @@ import {
 import StartNode from './Nodes/StartNode';
 import AlertNode from './Nodes/AlertNode';
 import InputTextNode from './Nodes/InputTextNode';
+import BaseUrlInputNode from './Nodes/BaseUrlInputNode';
 import DisplayNode from './Nodes/DisplayNode';
 import JsonProcessorNode from './Nodes/JsonProcessorNode';
 import WebhookTriggerNode from './Nodes/WebhookTriggerNode';
@@ -87,6 +88,7 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
     startNode: StartNode,
     alertNode: AlertNode,
     inputTextNode: InputTextNode,
+    baseUrlInputNode: BaseUrlInputNode,
     displayNode: DisplayNode,
     jsonProcessorNode: JsonProcessorNode,
     webhookTriggerNode: WebhookTriggerNode,
@@ -296,6 +298,12 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
                 sourceData = {
                   nodeId: sourceNode.data.nodeId || sourceNode.id,
                   inputValue: sourceNode.data.value || '',
+                  incomingData: sourceNode.data.incomingData,
+                };
+              } else if (sourceNode.type === 'baseUrlInputNode') {
+                sourceData = {
+                  nodeId: sourceNode.data.nodeId || sourceNode.id,
+                  base_url: sourceNode.data.base_url || '',
                   incomingData: sourceNode.data.incomingData,
                 };
               } else {
@@ -559,6 +567,15 @@ const FlowComponent = forwardRef<FlowComponentRef, FlowComponentProps>(function 
             };
           }
           if (node.type === 'inputTextNode') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                incomingData: null,
+              },
+            };
+          }
+          if (node.type === 'baseUrlInputNode') {
             return {
               ...node,
               data: {

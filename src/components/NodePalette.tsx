@@ -43,6 +43,11 @@ const categories: Category[] = [
         description: 'Поле для ввода текста',
       },
       {
+        type: 'baseUrlInputNode',
+        label: 'Base URL Input',
+        description: 'Ввод базового URL'
+      },
+      {
         type: 'displayNode',
         label: 'Display Node',
         description: 'Отображает все входящие данные',
