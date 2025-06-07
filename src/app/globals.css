@@ -62,11 +62,14 @@ a:hover {
 /* Ensure React Flow styles are imported if not handled elsewhere */
 /* @import '@xyflow/react/dist/style.css'; */
 .react-flow__node-default {
-  background: var(--card-background, #2d3748) !important;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important;
   color: var(--foreground, #f7fafc) !important;
-  border: 1px solid var(--border-color, #4a5568) !important;
-  box-shadow: 0 0 8px rgba(99, 179, 237, 0.2);
+  border: 1px solid var(--primary-accent, #0ea5e9) !important;
+  box-shadow:
+    0 0 12px rgba(14, 165, 233, 0.6),
+    0 0 2px rgba(14, 165, 233, 0.8) inset;
+  border-radius: 0.75rem !important;
 }
 .react-flow__node-default .react-flow__handle {
-  background: var(--primary-accent, #63b3ed) !important;
+  background: var(--primary-accent, #0ea5e9) !important;
 }
